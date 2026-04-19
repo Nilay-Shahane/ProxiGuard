@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "ProxiGuard",
+    "slug": "proxiguard",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#0D0D0D"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.yourname.proxiguard",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "ProxiGuard needs location to alert you when near your stop.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "ProxiGuard monitors your location in the background to wake you up near your stop.",
+        "NSLocationAlwaysUsageDescription": "ProxiGuard monitors your location in the background.",
+        "NSBluetoothAlwaysUsageDescription": "ProxiGuard uses Bluetooth to monitor your bag's proximity.",
+        "NSBluetoothPeripheralUsageDescription": "ProxiGuard uses Bluetooth to detect your bag device."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0D0D0D"
+      },
+      "package": "com.yourname.proxiguard",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "BLUETOOTH_SCAN",
+        "BLUETOOTH_CONNECT"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "ProxiGuard needs background location to alert you when near your stop."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#00E5A0"
+        }
+      ]
+    ]
+  }
+}
