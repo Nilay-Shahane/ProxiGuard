@@ -7,13 +7,15 @@ import {
   FlatList, ActivityIndicator, Alert, Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { COLORS } from '../App';
+import { COLORS } from '../theme/colors';
 import {
   startBLEScan,
   stopBLEScan,
   startRSSIMonitor,
   stopRSSIMonitor,
   requestBLEPermissions,
+  isBLEAvailable,
+  isBLESimulated,
 } from '../services/bleService';
 
 // Keys for persisting paired device info
@@ -157,12 +159,19 @@ export default function BagLeashScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>🎒 Bag Guard</Text>
-        <Text style={styles.subtitle}>Never leave your bag behind.</Text>
+        <Text style={styles.subtitle}>
+          Never leave your bag behind.{isBLESimulated ? ' (Simulation mode in Expo Go)' : ''}
+        </Text>
       </View>
 
       {/* Paired device card */}
       <View style={styles.card}>
         <Text style={styles.cardLabel}>PAIRED DEVICE</Text>
+        {!isBLEAvailable && (
+          <Text style={styles.noDevice}>
+            BLE simulation is active in Expo Go.
+          </Text>
+        )}
         {pairedDevice ? (
           <View style={styles.deviceRow}>
             <Text style={styles.deviceName}>
@@ -235,7 +244,7 @@ export default function BagLeashScreen() {
       {/* Info note */}
       <Text style={styles.infoNote}>
         💡 Put your BLE headphones or a tile tag in your bag, scan, and pair it.
-        Turn on Bag Guard when you start traveling.
+        Turn on Bag Guard when you start traveling. In Expo Go, this runs with simulated devices.
       </Text>
     </View>
   );

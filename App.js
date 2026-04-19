@@ -12,17 +12,7 @@ import BagLeashScreen from './screens/BagLeashScreen';
 
 // Notification setup (request permissions on app start)
 import { setupNotifications } from './services/notificationService';
-
-// Colors — dark theme
-export const COLORS = {
-  bg: '#0D0D0D',
-  card: '#1A1A1A',
-  accent: '#00E5A0',     // teal-green accent
-  accentRed: '#FF4C4C',  // for alerts
-  text: '#FFFFFF',
-  subtext: '#888888',
-  border: '#2A2A2A',
-};
+import { COLORS } from './theme/colors';
 
 const Tab = createBottomTabNavigator();
 

@@ -4,7 +4,6 @@
     "slug": "proxiguard",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "splash": {
       "backgroundColor": "#0D0D0D"
@@ -31,7 +30,9 @@
         "BLUETOOTH",
         "BLUETOOTH_ADMIN",
         "BLUETOOTH_SCAN",
-        "BLUETOOTH_CONNECT"
+        "BLUETOOTH_CONNECT",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
     "plugins": [
@@ -44,10 +45,14 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/icon.png",
           "color": "#00E5A0"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "47a340fa-f77c-49a3-bb39-df14b938300f"
+      }
+    }
   }
 }

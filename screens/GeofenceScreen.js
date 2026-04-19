@@ -6,9 +6,10 @@ import {
   View, Text, StyleSheet, TouchableOpacity,
   TextInput, Alert, ScrollView, Switch,
 } from 'react-native';
+import Constants from 'expo-constants';
 import MapView, { Marker, Circle } from 'react-native-maps';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { COLORS } from '../App';
+import { COLORS } from '../theme/colors';
 import {
   requestLocationPermissions,
   startGeofenceWatch,
@@ -24,6 +25,7 @@ const ALERT_RADIUS = 800;
 
 export default function GeofenceScreen() {
   const mapRef = useRef(null);
+  const isExpoGo = Constants.appOwnership === 'expo';
 
   // The pinned destination (lat/lng + optional name)
   const [destination, setDestination] = useState(null);
@@ -39,6 +41,8 @@ export default function GeofenceScreen() {
 
   // Simple label the user can type for the destination
   const [destinationLabel, setDestinationLabel] = useState('');
+  const [manualLat, setManualLat] = useState('');
+  const [manualLng, setManualLng] = useState('');
 
   // --- Load saved destination from storage on mount ---
   useEffect(() => {
@@ -53,6 +57,8 @@ export default function GeofenceScreen() {
         const parsed = JSON.parse(saved);
         setDestination(parsed);
         setDestinationLabel(parsed.label || '');
+        setManualLat(String(parsed.latitude));
+        setManualLng(String(parsed.longitude));
         setStatusMsg(`Saved: ${parsed.label || 'Pinned spot'}`);
       }
     } catch (e) {
@@ -133,6 +139,55 @@ export default function GeofenceScreen() {
     }
   };
 
+  const saveManualDestination = async () => {
+    if (isActive) {
+      Alert.alert('Stop the alarm first', 'Turn off the alarm before changing destination.');
+      return;
+    }
+
+    const latitude = parseFloat(manualLat);
+    const longitude = parseFloat(manualLng);
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      Alert.alert('Invalid coordinates', 'Enter valid latitude and longitude values.');
+      return;
+    }
+
+    const newDest = {
+      latitude,
+      longitude,
+      label: destinationLabel || 'My Stop',
+    };
+
+    setDestination(newDest);
+    await AsyncStorage.setItem(DESTINATION_KEY, JSON.stringify(newDest));
+    setStatusMsg(`Saved: ${newDest.label} (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`);
+  };
+
+  const useCurrentLocationAsDestination = async () => {
+    if (!currentLocation) {
+      Alert.alert('Location unavailable', 'Tap My Location first and allow location permission.');
+      return;
+    }
+
+    if (isActive) {
+      Alert.alert('Stop the alarm first', 'Turn off the alarm before changing destination.');
+      return;
+    }
+
+    const newDest = {
+      latitude: currentLocation.latitude,
+      longitude: currentLocation.longitude,
+      label: destinationLabel || 'My Stop',
+    };
+
+    setManualLat(String(newDest.latitude));
+    setManualLng(String(newDest.longitude));
+    setDestination(newDest);
+    await AsyncStorage.setItem(DESTINATION_KEY, JSON.stringify(newDest));
+    setStatusMsg(`Saved: ${newDest.label} (${newDest.latitude.toFixed(4)}, ${newDest.longitude.toFixed(4)})`);
+  };
+
   return (
     <View style={styles.container}>
       {/* Title */}
@@ -151,46 +206,82 @@ export default function GeofenceScreen() {
       />
 
       {/* Map View */}
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        onPress={handleMapPress}
-        mapType="standard"
-        initialRegion={{
-          // Default to Mumbai area
-          latitude: 19.076,
-          longitude: 72.877,
-          latitudeDelta: 0.3,
-          longitudeDelta: 0.3,
-        }}
-      >
-        {/* Show pinned destination marker */}
-        {destination && (
-          <>
-            <Marker
-              coordinate={destination}
-              title={destination.label}
-              pinColor={COLORS.accent}
-            />
-            {/* Visual circle showing the alert radius */}
-            <Circle
-              center={destination}
-              radius={ALERT_RADIUS}
-              strokeColor={COLORS.accent}
-              fillColor="rgba(0, 229, 160, 0.10)"
-            />
-          </>
-        )}
+      {isExpoGo ? (
+        <View style={[styles.map, styles.mapFallback]}>
+          <Text style={styles.mapFallbackTitle}>Map preview disabled in Expo Go</Text>
+          <Text style={styles.mapFallbackText}>
+            Enter destination coordinates below to use Wake Me Up in Expo Go.
+          </Text>
 
-        {/* Show user's current location */}
-        {currentLocation && (
-          <Marker
-            coordinate={currentLocation}
-            title="You"
-            pinColor="#4A90E2"
-          />
-        )}
-      </MapView>
+          <View style={styles.coordRow}>
+            <TextInput
+              style={[styles.input, styles.coordInput]}
+              placeholder="Latitude"
+              placeholderTextColor={COLORS.subtext}
+              value={manualLat}
+              onChangeText={setManualLat}
+              keyboardType="numeric"
+            />
+            <TextInput
+              style={[styles.input, styles.coordInput]}
+              placeholder="Longitude"
+              placeholderTextColor={COLORS.subtext}
+              value={manualLng}
+              onChangeText={setManualLng}
+              keyboardType="numeric"
+            />
+          </View>
+
+          <TouchableOpacity style={styles.smallActionBtn} onPress={saveManualDestination}>
+            <Text style={styles.smallActionBtnText}>Save Destination</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.smallGhostBtn} onPress={useCurrentLocationAsDestination}>
+            <Text style={styles.smallGhostBtnText}>Use My Current Location</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <MapView
+          ref={mapRef}
+          style={styles.map}
+          onPress={handleMapPress}
+          mapType="standard"
+          initialRegion={{
+            // Default to Mumbai area
+            latitude: 19.076,
+            longitude: 72.877,
+            latitudeDelta: 0.3,
+            longitudeDelta: 0.3,
+          }}
+        >
+          {/* Show pinned destination marker */}
+          {destination && (
+            <>
+              <Marker
+                coordinate={destination}
+                title={destination.label}
+                pinColor={COLORS.accent}
+              />
+              {/* Visual circle showing the alert radius */}
+              <Circle
+                center={destination}
+                radius={ALERT_RADIUS}
+                strokeColor={COLORS.accent}
+                fillColor="rgba(0, 229, 160, 0.10)"
+              />
+            </>
+          )}
+
+          {/* Show user's current location */}
+          {currentLocation && (
+            <Marker
+              coordinate={currentLocation}
+              title="You"
+              pinColor="#4A90E2"
+            />
+          )}
+        </MapView>
+      )}
 
       {/* My Location button */}
       <TouchableOpacity style={styles.myLocBtn} onPress={goToMyLocation}>
@@ -250,6 +341,57 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     height: 300,
     overflow: 'hidden',
+  },
+  mapFallback: {
+    backgroundColor: COLORS.card,
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    padding: 16,
+    justifyContent: 'center',
+  },
+  mapFallbackTitle: {
+    color: COLORS.text,
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 8,
+  },
+  mapFallbackText: {
+    color: COLORS.subtext,
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  coordRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  coordInput: {
+    flex: 1,
+    marginHorizontal: 0,
+  },
+  smallActionBtn: {
+    marginTop: 6,
+    backgroundColor: COLORS.accent,
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  smallActionBtnText: {
+    color: '#000',
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  smallGhostBtn: {
+    marginTop: 8,
+    borderColor: COLORS.border,
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 10,
+    alignItems: 'center',
+  },
+  smallGhostBtnText: {
+    color: COLORS.text,
+    fontSize: 13,
   },
   myLocBtn: {
     alignSelf: 'flex-end',
