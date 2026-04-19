@@ -22,37 +22,7 @@ ProxiGuard/
     └── notificationService.js    # Notification setup + send alert
 ```
 
----
 
-## Setup (Day 1)
-
-```bash
-# 1. Install dependencies
-npm install
-
-# 2. Build dev client (required for BLE + background location)
-npx expo run:android
-# or
-npx expo run:ios
-```
-
-> ⚠️ **Cannot use Expo Go** — `react-native-ble-plx` requires a custom dev build.
-
----
-
-## Day 1 Focus (Location / Geofence)
-1. Run `npx expo run:android` to get a dev build on your phone
-2. Open the **Wake Me Up** tab
-3. Type a destination name, tap the map to pin it
-4. Tap **Start Alarm** — walk toward the pin to test
-
-## Day 2 Focus (BLE / Bag Guard)
-1. Open the **Bag Guard** tab
-2. Tap **Scan for Devices** — your Bluetooth headphones / tag will appear
-3. Tap the device to pair it
-4. Toggle **Bag Guard ON** and walk away from your phone to test
-
----
 
 ## Key Config Values (easy to tweak)
 
